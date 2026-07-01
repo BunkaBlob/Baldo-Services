@@ -74,7 +74,7 @@ body::after {
   top: 0;
   z-index: 100;
   height: var(--nav-h);
-  background: #ffffff;
+  background: #e0cc5b;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
@@ -107,7 +107,7 @@ body::after {
   object-fit: contain;
   display: block;
   flex-shrink: 0;
-  border-radius: 10px;
+  
       transition: 0.5s; /* no size animation on scroll */
 }
 
@@ -136,14 +136,14 @@ body::after {
   position: absolute;
   bottom: 0; left: 50%;
   width: 0; height: 1.5px;
-  background: var(--accent);
+  background: rgb(23, 5, 104);
   transform: translateX(-50%);
   transition: width 0.3s var(--ease);
 }
-.nav-link:hover { color: var(--accent); }
+.nav-link:hover { color: rgb(23, 5, 104); }
 .nav-link:hover::after { width: 100%; }
 .site-header.is-scrolled .brand-icon {
-  width: 300px;
+  width: 250px;
   min-width: 200px;
   max-height: 200px;
 }
