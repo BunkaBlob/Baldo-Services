@@ -969,7 +969,7 @@ a.contact-info-item:focus-visible { outline: 2px solid var(--accent); outline-of
   object-fit: contain;
   display: block;
   flex-shrink: 0;
-  border-radius: 10px;
+  
 }
 .footer-brand-name { font-size: clamp(0.94rem, 1.05vw, 1rem); font-weight: 800; letter-spacing: 0.18em; color: var(--muted); }
 .footer-tagline { font-size: clamp(0.84rem, 0.94vw, 0.9rem); color: rgba(148,163,184,0.55); line-height: 1.7; max-width: 40ch; margin-bottom: var(--sp-3); }
