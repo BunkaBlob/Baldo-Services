@@ -515,6 +515,7 @@
     initSmoothScroll();
     initHeroEntrance();
     initContactForm();
+    initHeroCanvas(); 
   }
 
 
@@ -526,3 +527,166 @@
 
 
 })();
+
+/* ----------------------------------------------------------
+   8. HERO CANVAS — 3D Rotating Cube + Pyramid
+---------------------------------------------------------- */
+function initHeroCanvas() {
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  const GOLD  = 'rgba(229,184,66,';
+  const BLUE  = 'rgba(13,27,62,';
+
+  /* ---- Matrix math ---- */
+  function rotX(p, a) {
+    return { x: p.x, y: p.y * Math.cos(a) - p.z * Math.sin(a), z: p.y * Math.sin(a) + p.z * Math.cos(a) };
+  }
+  function rotY(p, a) {
+    return { x: p.x * Math.cos(a) + p.z * Math.sin(a), y: p.y, z: -p.x * Math.sin(a) + p.z * Math.cos(a) };
+  }
+  function rotZ(p, a) {
+    return { x: p.x * Math.cos(a) - p.y * Math.sin(a), y: p.x * Math.sin(a) + p.y * Math.cos(a), z: p.z };
+  }
+  function project(p, cx, cy, fov) {
+    const z = p.z + fov;
+    const scale = fov / z;
+    return { x: cx + p.x * scale, y: cy + p.y * scale, s: scale };
+  }
+  function drawEdge(a, b, alpha, width) {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = GOLD + alpha + ')';
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+  function drawFace(pts, fillAlpha, strokeAlpha) {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle   = BLUE + fillAlpha + ')';
+    ctx.strokeStyle = GOLD + strokeAlpha + ')';
+    ctx.lineWidth   = 1.2;
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  /* ---- CUBE ---- */
+  const cubeSize = 120;
+  const cubeVerts = [
+    {x:-1,y:-1,z:-1},{x:1,y:-1,z:-1},{x:1,y:1,z:-1},{x:-1,y:1,z:-1},
+    {x:-1,y:-1,z:1}, {x:1,y:-1,z:1}, {x:1,y:1,z:1}, {x:-1,y:1,z:1},
+  ].map(v => ({ x: v.x * cubeSize, y: v.y * cubeSize, z: v.z * cubeSize }));
+
+  const cubeFaces = [
+    [0,1,2,3],[4,5,6,7],[0,1,5,4],[2,3,7,6],[0,3,7,4],[1,2,6,5]
+  ];
+
+  /* ---- PYRAMID ---- */
+  const pyBase = 150;
+  const pyH    = 200;
+  const pyVerts = [
+    {x:-pyBase,y:pyH/2, z:-pyBase},
+    {x: pyBase,y:pyH/2, z:-pyBase},
+    {x: pyBase,y:pyH/2, z: pyBase},
+    {x:-pyBase,y:pyH/2, z: pyBase},
+    {x:0,      y:-pyH/2,z:0},
+  ];
+  const pyFaces = [
+    [0,1,2,3],
+    [0,1,4],[1,2,4],[2,3,4],[3,0,4],
+  ];
+
+  /* ---- Floating particles ---- */
+  const particles = Array.from({ length: 28 }, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    r: Math.random() * 1.5 + 0.5,
+  }));
+
+  let t = 0;
+
+  function drawShape(verts, faces, cx, cy, rx, ry, rz) {
+    const fov = 380;
+    const rotated = verts.map(v => {
+      let p = rotX(v, rx);
+      p = rotY(p, ry);
+      p = rotZ(p, rz);
+      return p;
+    });
+
+    /* Sort faces back-to-front */
+    const sorted = faces.map(face => {
+      const avgZ = face.reduce((s, i) => s + rotated[i].z, 0) / face.length;
+      return { face, avgZ };
+    }).sort((a, b) => b.avgZ - a.avgZ);
+
+    sorted.forEach(({ face }) => {
+      const pts = face.map(i => project(rotated[i], cx, cy, fov));
+      drawFace(pts, 0.25, 0.7);
+    });
+  }
+
+  function drawParticles() {
+    particles.forEach((p, i) => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+
+      /* Connect nearby particles */
+      particles.forEach((q, j) => {
+        if (j <= i) return;
+        const dx = p.x - q.x, dy = p.y - q.y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (d < 120) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = GOLD + (1 - d/120) * 0.15 + ')';
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      });
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = GOLD + '0.4)';
+      ctx.fill();
+    });
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.008;
+
+    /* Cube — floats up/down gently, top-left area */
+    const cubeX = W * 0.3 + Math.sin(t * 0.7) * 18;
+    const cubeY = H * 0.38 + Math.cos(t * 0.5) * 14;
+    drawShape(cubeVerts, cubeFaces, cubeX, cubeY, t * 0.6, t * 0.9, t * 0.3);
+
+    /* Pyramid — floats opposite phase, bottom-right area */
+    const pyX = W * 0.72 + Math.cos(t * 0.6) * 20;
+    const pyY = H * 0.58 + Math.sin(t * 0.8) * 16;
+    drawShape(pyVerts, pyFaces, pyX, pyY, t * 0.4, t * 0.7, t * 0.5);
+
+    drawParticles();
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}

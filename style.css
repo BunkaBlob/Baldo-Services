@@ -1089,3 +1089,26 @@ a.footer-contact-item:focus-visible { outline: 2px solid var(--accent); outline-
   letter-spacing: 0.18em;
   color: var(--muted);
 }
+
+/* ----------------------------------------------------------------
+   HERO VISUAL — canvas animation
+---------------------------------------------------------------- */
+.hero-visual {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#hero-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .hero-visual { display: none; }
+}
