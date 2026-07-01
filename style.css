@@ -260,12 +260,12 @@ body::after {
 ---------------------------------------------------------------- */
 .service-card {
   position: relative;
-  background: #b3913d;
+  background:  #e4b84a;
   border: 1px solid rgba(229,184,66,0.3);
   border-radius: 10px;
   overflow: hidden;
   cursor: default;
-  height: 300px;
+  height: 350px;
   outline-offset: 3px;
   transition:
     border-color 0.4s var(--ease),
@@ -495,6 +495,18 @@ body::after {
 .service-card:hover .card-desc-list li:nth-child(3),
 .service-card.is-active .card-desc-list li:nth-child(3) {
   opacity: 1; transform: translateX(0); transition-delay: 0.32s;
+}
+.service-card:hover .card-desc-list li:nth-child(4),
+.service-card.is-active .card-desc-list li:nth-child(4) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.39s;
+}
+.service-card:hover .card-desc-list li:nth-child(5),
+.service-card.is-active .card-desc-list li:nth-child(5) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.46s;
+}
+.service-card:hover .card-desc-list li:nth-child(6),
+.service-card.is-active .card-desc-list li:nth-child(6) {
+  opacity: 1; transform: translateX(0); transition-delay: 0.53s;
 }
 
 .card-desc-list li:hover { color: var(--text); }
@@ -1051,12 +1063,13 @@ a.footer-contact-item:focus-visible { outline: 2px solid var(--accent); outline-
    REDUCED MOTION
 ---------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+  .service-card:hover .card-desc-list li,
+  .service-card.is-active .card-desc-list li {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s;
   }
+}
   .service-card:hover .card-icon-wrap,
   .service-card.is-active .card-icon-wrap { transform: scale(0); opacity: 0; }
   .service-card:hover .card-body,
