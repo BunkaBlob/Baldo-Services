@@ -1080,7 +1080,7 @@ a.footer-contact-item:focus-visible { outline: 2px solid var(--accent); outline-
   .print-orb-ring { animation: none; }
   .card-icon-wrap svg { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
-}
+
 
 .brand-text {
   font-family: 'Nunito', var(--ff);
