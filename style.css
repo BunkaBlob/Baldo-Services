@@ -921,11 +921,11 @@ a.contact-info-item:focus-visible { outline: 2px solid var(--accent); outline-of
   font-size: clamp(1.4rem, 2.2vw, 1.9rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--text);
+  color: black;
 }
 .success-sub {
   font-size: clamp(0.9rem, 1.05vw, 0.98rem);
-  color: var(--muted);
+  color: black;
   line-height: 1.75;
   max-width: 44ch;
 }
