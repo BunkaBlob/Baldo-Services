@@ -108,7 +108,7 @@ body::after {
   display: block;
   flex-shrink: 0;
   border-radius: 10px;
-  transition: none;     /* no size animation on scroll */
+      transition: 0.5s; /* no size animation on scroll */
 }
 
 .brand-accent { color: var(--accent); }
@@ -143,7 +143,7 @@ body::after {
 .nav-link:hover { color: var(--accent); }
 .nav-link:hover::after { width: 100%; }
 .site-header.is-scrolled .brand-icon {
-  width: 200px;
+  width: 300px;
   min-width: 200px;
   max-height: 200px;
 }
