@@ -1144,7 +1144,7 @@ a.footer-contact-item:focus-visible { outline: 2px solid var(--accent); outline-
   right: 0;
   width: min(78vw, 320px);
   height: 100vh;
-  background: #E5B842;
+  background: #0D1B3E;
   box-shadow: -12px 0 40px rgba(0,0,0,0.35);
   transform: translateX(100%);
   transition: transform 0.35s var(--ease);
@@ -1160,7 +1160,7 @@ a.footer-contact-item:focus-visible { outline: 2px solid var(--accent); outline-
 }
 
 .mobile-nav-link {
-  color: #0D1B3E;
+  color: #9e9510;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1179,4 +1179,66 @@ body.nav-open {
   .nav-toggle {
     display: inline-flex;
   }
+}
+
+/* Custom ring cursor + trail (desktop only) */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+
+  .custom-cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%) scale(1);
+    transition: transform 0.18s ease, opacity 0.18s ease;
+    will-change: transform, left, top;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    mix-blend-mode: screen;
+  }
+
+  .cursor-ring {
+    width: 60px;
+    height: 60px;
+    display: block;
+    transform-origin: center;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+    filter: drop-shadow(0 6px 18px rgba(229,184,66,0.12));
+    opacity: 0.98;
+  }
+
+  .custom-cursor.is-hover .cursor-ring {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+
+  .custom-cursor.is-active .cursor-ring {
+    transform: scale(1.6);
+    opacity: 1;
+  }
+
+  /* Trail canvas covers whole screen but pointer-events none */
+  #cursor-trail-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99998;
+    display: block;
+  }
+
+  /* Smaller on small screens */
+  @media (max-width: 780px) {
+    .custom-cursor { display: none; }
+    #cursor-trail-canvas { display: none; }
+  }
+}
+
+/* fallback: hide custom cursor on touch / reduced-motion */
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .custom-cursor, #cursor-trail-canvas { display: none !important; }
 }

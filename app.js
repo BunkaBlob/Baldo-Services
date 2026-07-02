@@ -517,6 +517,7 @@
     initContactForm();
     initHeroCanvas(); 
     initMobileNav();
+    initRingCursor();
   }
 
 
@@ -715,4 +716,167 @@ function initMobileNav() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") setOpen(false);
   });
+}
+
+// Ring cursor + trailing path
+function initRingCursor() {
+  // disable on touch devices or reduced motion
+  if (window.matchMedia('(hover: none)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const ringEl = document.querySelector('.custom-cursor');
+  const trailCanvas = document.getElementById('cursor-trail-canvas');
+  if (!ringEl || !trailCanvas) return;
+
+  const ctx = trailCanvas.getContext('2d');
+  let W = trailCanvas.width = innerWidth;
+  let H = trailCanvas.height = innerHeight;
+
+  // Smooth follower position
+  let px = W / 2, py = H / 2;   // visible position
+  let tx = px, ty = py;         // target (mouse)
+  const ease = 0.18;
+
+  // Trail buffer (circular) - store recent pointer positions for fading trail
+  const TRAIL_LEN = 18;
+  const trail = new Array(TRAIL_LEN).fill(null).map(() => ({ x: px, y: py, t: 0 }));
+
+  // Utility to set ring element position
+  function setRingPos(x, y) {
+    ringEl.style.left = x + 'px';
+    ringEl.style.top  = y + 'px';
+  }
+
+  // Resize handler
+  function resize() {
+    W = trailCanvas.width = innerWidth;
+    H = trailCanvas.height = innerHeight;
+  }
+  window.addEventListener('resize', resize);
+
+  // Mouse tracking
+  document.addEventListener('mousemove', (e) => {
+    tx = e.clientX;
+    ty = e.clientY;
+    // push new sample into trail (overwrite oldest)
+    trail.unshift({ x: tx, y: ty, t: performance.now() });
+    if (trail.length > TRAIL_LEN) trail.pop();
+  });
+
+  // Hover targets for stronger effect
+  const HOVER_SELECTOR = 'a, button, .card-icon-wrap, .hero-cta, .card-link, .nav-link, .mobile-nav-link';
+  let hoverTargets = [...document.querySelectorAll(HOVER_SELECTOR)];
+
+  // Recompute targets on resize / DOM changes (lightweight)
+  const refreshTargets = () => { hoverTargets = [...document.querySelectorAll(HOVER_SELECTOR)]; };
+  window.addEventListener('resize', refreshTargets);
+  const refreshInterval = setInterval(refreshTargets, 1500);
+
+  // Helper to find nearest hover target within influence
+  function findNearbyTarget(x, y) {
+    let best = null;
+    let bestDist = Infinity;
+    for (const el of hoverTargets) {
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dx = x - cx, dy = y - cy;
+      const dist = Math.hypot(dx, dy);
+      const influence = Math.max(110, Math.max(r.width, r.height) * 1.25);
+      if (dist < influence && dist < bestDist) {
+        bestDist = dist;
+        best = { el, dist, influence, r, cx, cy };
+      }
+    }
+    return best;
+  }
+
+  // Add hover/leave listeners so ring shows hover state reliably
+  function addHoverHandlers() {
+    hoverTargets.forEach(el => {
+      el.addEventListener('mouseenter', () => ringEl.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => ringEl.classList.remove('is-hover', 'is-active'));
+      el.addEventListener('mousedown', () => ringEl.classList.add('is-active'));
+      el.addEventListener('mouseup', () => ringEl.classList.remove('is-active'));
+    });
+  }
+  addHoverHandlers();
+  // Re-apply when targets refresh
+  setInterval(addHoverHandlers, 1500);
+
+  // Trail drawing: fade older points
+  function drawTrail() {
+    ctx.clearRect(0, 0, W, H);
+    // fade background slightly to produce trailing smear
+    // we'll draw semi-transparent strokes for each segment
+    for (let i = 0; i < trail.length - 1; i++) {
+      const a = trail[i];
+      const b = trail[i + 1];
+      if (!a || !b) continue;
+      const ageFactor = 1 - i / trail.length; // 1..0
+      const alpha = Math.pow(ageFactor, 1.6) * 0.45; // curve
+      const width = 1 + ageFactor * 3;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.strokeStyle = `rgba(229,184,66,${alpha})`;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+  }
+
+  // main animation loop
+  function loop() {
+    // magnet effect: if near an interactive target, pull the ring toward its center
+    const near = findNearbyTarget(tx, ty);
+    let targetX = tx, targetY = ty;
+    if (near) {
+      const strength = 0.55; // adjust how strongly it pulls
+      // place target between mouse and element center
+      const t = 1 - (near.dist / near.influence); // 0..1
+      targetX = near.cx * (strength * t) + tx * (1 - strength * t);
+      targetY = near.cy * (strength * t) + ty * (1 - strength * t);
+      // if very close give the active state
+      if (near.dist < Math.min(near.r.width, near.r.height) * 0.5) {
+        ringEl.classList.add('is-active');
+      } else {
+        ringEl.classList.remove('is-active');
+      }
+    } else {
+      ringEl.classList.remove('is-active');
+    }
+
+    // smooth follow
+    px += (targetX - px) * ease;
+    py += (targetY - py) * ease;
+
+    setRingPos(px, py);
+
+    // maintain trail array centered on current mouse samples
+    // keep recent mouse positions in trail (older entries fade)
+    // if mouse stopped, still shift stored points slightly toward current pos
+    for (let i = trail.length - 1; i > 0; i--) {
+      // simple lerp to smooth sparse updates
+      trail[i].x += (trail[i - 1].x - trail[i].x) * 0.24;
+      trail[i].y += (trail[i - 1].y - trail[i].y) * 0.24;
+    }
+    // latest element follows actual tx/ty
+    if (trail[0]) {
+      trail[0].x += (tx - trail[0].x) * 0.36;
+      trail[0].y += (ty - trail[0].y) * 0.36;
+    }
+
+    drawTrail();
+    requestAnimationFrame(loop);
+  }
+
+  // initialize positions and start
+  setRingPos(px, py);
+  // seed trail with center
+  for (let i = 0; i < trail.length; i++) trail[i] = { x: px, y: py, t: performance.now() - i * 8 };
+
+  loop();
+
+  // cleanup helper (not used automatically)
+  // return () => { clearInterval(refreshInterval); window.removeEventListener('resize', resize); };
 }
