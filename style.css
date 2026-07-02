@@ -74,7 +74,7 @@ body::after {
   top: 0;
   z-index: 100;
   height: var(--nav-h);
-  background: #e0cc5b;
+  background: #0D1B3E;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
@@ -121,7 +121,7 @@ body::after {
 
 .nav-link {
   position: relative;
-  color: #0A0D1A;
+  color: #c7c53d;
   font-size: clamp(0.85rem, 1vw, 0.95rem);
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -136,11 +136,11 @@ body::after {
   position: absolute;
   bottom: 0; left: 50%;
   width: 0; height: 1.5px;
-  background: rgb(23, 5, 104);
+  background: rgb(102, 60, 6);
   transform: translateX(-50%);
   transition: width 0.3s var(--ease);
 }
-.nav-link:hover { color: rgb(23, 5, 104); }
+.nav-link:hover { color: rgb(102, 60, 6); }
 .nav-link:hover::after { width: 100%; }
 .site-header.is-scrolled .brand-icon {
   width: 210px;
