@@ -1242,3 +1242,27 @@ body.nav-open {
 @media (hover: none), (prefers-reduced-motion: reduce) {
   .custom-cursor, #cursor-trail-canvas { display: none !important; }
 }
+
+.visit-counter {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 9999;
+
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(18, 26, 46, 0.94);
+  color: #ffffff;
+  border: 1px solid rgba(229, 184, 66, 0.28);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+
+  font-size: 0.82rem;
+  line-height: 1.6;
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+}
+
+.visit-counter span {
+  color: #E5B842;
+  font-weight: 700;
+}

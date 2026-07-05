@@ -518,6 +518,7 @@
     initHeroCanvas(); 
     initMobileNav();
     initRingCursor();
+    initVisitCounter();
   }
 
 
@@ -880,3 +881,31 @@ function initRingCursor() {
   // cleanup helper (not used automatically)
   // return () => { clearInterval(refreshInterval); window.removeEventListener('resize', resize); };
 }
+
+function initVisitCounter() {
+  const params = new URLSearchParams(window.location.search);
+  const source = params.get("source");
+
+  try {
+    if (source === "instagram" || source === "tiktok") {
+      const visitKey = `counted_${source}`;
+      const alreadyCounted = localStorage.getItem(visitKey);
+
+      if (!alreadyCounted) {
+        const currentCount = parseInt(localStorage.getItem(source), 10) || 0;
+        localStorage.setItem(source, String(currentCount + 1));
+        localStorage.setItem(visitKey, "true");
+      }
+    }
+
+    const igCount = document.getElementById("igCount");
+    const ttCount = document.getElementById("ttCount");
+
+    if (igCount) igCount.textContent = localStorage.getItem("instagram") || "0";
+    if (ttCount) ttCount.textContent = localStorage.getItem("tiktok") || "0";
+  } catch (error) {
+    console.warn("Visit counter storage is unavailable.", error);
+  }
+}
+
+initVisitCounter();
