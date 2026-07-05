@@ -882,29 +882,34 @@ function initRingCursor() {
   // return () => { clearInterval(refreshInterval); window.removeEventListener('resize', resize); };
 }
 
-function initVisitCounter() {
+async function initVisitCounter() {
   const params = new URLSearchParams(window.location.search);
   const source = params.get("source");
 
   try {
-    if (source === "instagram" || source === "tiktok") {
-      const visitKey = `counted_${source}`;
-      const alreadyCounted = localStorage.getItem(visitKey);
+    const url = source
+      ? `/visit?source=${encodeURIComponent(source)}`
+      : "/visit";
 
-      if (!alreadyCounted) {
-        const currentCount = parseInt(localStorage.getItem(source), 10) || 0;
-        localStorage.setItem(source, String(currentCount + 1));
-        localStorage.setItem(visitKey, "true");
-      }
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Counter request failed: ${response.status}`);
     }
+
+    const data = await response.json();
 
     const igCount = document.getElementById("igCount");
     const ttCount = document.getElementById("ttCount");
 
-    if (igCount) igCount.textContent = localStorage.getItem("instagram") || "0";
-    if (ttCount) ttCount.textContent = localStorage.getItem("tiktok") || "0";
+    if (igCount) igCount.textContent = data.instagram ?? 0;
+    if (ttCount) ttCount.textContent = data.tiktok ?? 0;
   } catch (error) {
-    console.warn("Visit counter storage is unavailable.", error);
+    console.error("Visit counter failed:", error);
   }
 }
 
